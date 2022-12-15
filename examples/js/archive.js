@@ -62,9 +62,31 @@ function extractKey() {
 let imageCount = 0;
 let fetchedFrom;
 function renderImages(file, url) {
+  //  if (file.format === 'PNG' || file.format === 'JPEG') {
+  //     const imageRow = document.createElement('div');
+  //     const image = new Image(150, 150);
+  //     const placeButton = document.createElement('a');
+  //     fetchedFrom = document.createElement('p');
+  //     const fetchedFromUrl = document.createElement('a');
+  //     fetchedFromUrl.setAttribute('href', input.value);
+  //     fetchedFromUrl.setAttribute('target', '_blank');
+  //     fetchedFromUrl.innerHTML = 'this Internet Archive Collection';
+  //     fetchedFrom.appendChild(fetchedFromUrl);
+
+  //     placeButton.classList.add('btn', 'btn-sm', 'btn-outline-secondary', 'place-button');
+  //     placeButton.innerHTML = 'Place on map';
+
+  //     image.src = `${url.replace('metadata', 'download')}/${file.name}`;
+  //     imageRow.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-4', 'pe-5');
+  //     imageRow.append(image, placeButton);
+
+  //     imageContainer.appendChild(imageRow);
+  //     imageCount++;
+  //   };
+
   if (file.format === 'PNG' || file.format === 'JPEG') {
     const imageRow = document.createElement('div');
-    const image = new Image(150, 150);
+    const image = new Image(65, 65);
     const placeButton = document.createElement('a');
     fetchedFrom = document.createElement('p');
     const fetchedFromUrl = document.createElement('a');
@@ -72,17 +94,23 @@ function renderImages(file, url) {
     fetchedFromUrl.setAttribute('target', '_blank');
     fetchedFromUrl.innerHTML = 'this Internet Archive Collection';
     fetchedFrom.appendChild(fetchedFromUrl);
+    const fileName = document.createElement('p');
+    fileName.innerHTML = file.name;
+    fileName.classList.add('m-0');
+    fileName.style.fontSize = '12px';
 
-    placeButton.classList.add('btn', 'btn-sm', 'btn-outline-secondary', 'place-button');
-    placeButton.innerHTML = 'Place on map';
+    placeButton.classList.add('btn', 'btn-sm', 'btn-outline-secondary', 'place-button', 'mt-1');
+    placeButton.innerHTML = 'Place';
+    placeButton.setAttribute('title', 'Place image on map');
 
     image.src = `${url.replace('metadata', 'download')}/${file.name}`;
-    imageRow.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-4', 'pe-5');
-    imageRow.append(image, placeButton);
+    imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
+    imageRow.append(image, placeButton, fileName);
 
     imageContainer.appendChild(imageRow);
+    imageContainer.setAttribute('class', 'row');
     imageCount++;
-  }
+  };
 }
 
 function showImages(getUrl) {
