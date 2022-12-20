@@ -1,5 +1,7 @@
 let map;
 const welcomeModal = document.getElementById('welcomeModal');
+const tileMap = document.getElementById('map');
+const restoreWelcomeModal = document.getElementById('restoreWelcomeModalBtn');
 const sidebar = document.getElementById('offcanvasRight');
 const form = document.getElementById('form');
 const input = document.getElementById('input');
@@ -29,10 +31,6 @@ setupCollection();
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   extractKey();
-});
-
-welcomeModal.addEventListener('hidden.bs.modal', (event) => {
-  new bootstrap.Offcanvas(sidebar).show();
 });
 
 function extractKey() {
@@ -205,12 +203,17 @@ welcomeModal.addEventListener('hidden.bs.modal', (event) => {
   new bootstrap.Offcanvas(sidebar).show();
 });
 
-map.addEventListener('click', (event) => {
-  sidebar.classList.remove('show');
+restoreWelcomeModal.addEventListener('click', (event) => {
+  bootstrap.Modal.getInstance(welcomeModal).show();
+  input.value='';
 });
 
 mapToggle.addEventListener('click', (event) => {
   new bootstrap.Offcanvas(sidebar).show();
+});
+
+tileMap.addEventListener('click', (event) => {
+  bootstrap.Offcanvas.getInstance(sidebar).hide();
 });
 
 document.addEventListener('click', (event) => {
