@@ -64,7 +64,7 @@ function renderImages(files, url, count) {
   const images = files.filter(file => file.format === 'PNG' || file.format === 'JPEG');
 
   if (count < 100) {
-    images.forEach((file)=>{
+    images.forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(150, 150);
       const placeButton = document.createElement('a');
@@ -84,7 +84,7 @@ function renderImages(files, url, count) {
       imageContainer.appendChild(imageRow);
       imageCount++;
     });
-  } else {
+  } else if (thumbs.length === images.length) {
     thumbs.forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(65, 65);
@@ -105,6 +105,34 @@ function renderImages(files, url, count) {
       placeButton.setAttribute('title', 'Place image on map');
 
       image.setAttribute('data-original', `${url.replace('metadata', 'download')}/${file.original}`);
+      image.src = `${url.replace('metadata', 'download')}/${file.name}`;
+      imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
+      imageRow.append(image, placeButton, fileName);
+      imageContainer.appendChild(imageRow);
+      imageContainer.setAttribute('class', 'row');
+      imageCount++;
+    });
+  } else {
+    images.forEach((file) => {
+      const imageRow = document.createElement('div');
+      const image = new Image(65, 65);
+      const placeButton = document.createElement('a');
+      fetchedFrom = document.createElement('p');
+      const fetchedFromUrl = document.createElement('a');
+      fetchedFromUrl.setAttribute('href', input.value);
+      fetchedFromUrl.setAttribute('target', '_blank');
+      fetchedFromUrl.innerHTML = 'this Internet Archive Collection';
+      fetchedFrom.appendChild(fetchedFromUrl);
+      const fileName = document.createElement('p');
+      fileName.innerHTML = file.name;
+      fileName.classList.add('m-0');
+      fileName.style.fontSize = '12px';
+
+      placeButton.classList.add('btn', 'btn-sm', 'btn-outline-secondary', 'place-button', 'mt-1');
+      placeButton.innerHTML = 'Place';
+      placeButton.setAttribute('title', 'Place image on map');
+
+      image.setAttribute('data-original', `${url.replace('metadata', 'download')}/${file.name}`);
       image.src = `${url.replace('metadata', 'download')}/${file.name}`;
       imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
       imageRow.append(image, placeButton, fileName);
