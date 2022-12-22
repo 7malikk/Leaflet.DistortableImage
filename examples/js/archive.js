@@ -1,5 +1,7 @@
 let map;
 const welcomeModal = document.getElementById('welcomeModal');
+const tileMap = document.getElementById('map');
+const restoreWelcomeModal = document.getElementById('restoreWelcomeModalBtn');
 const sidebar = document.getElementById('offcanvasRight');
 const form = document.getElementById('form');
 const input = document.getElementById('input');
@@ -29,10 +31,6 @@ setupCollection();
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   extractKey();
-});
-
-welcomeModal.addEventListener('hidden.bs.modal', (event) => {
-  new bootstrap.Offcanvas(sidebar).show();
 });
 
 function extractKey() {
@@ -147,13 +145,17 @@ function renderImages(files, url, count) {
 
 function showImages(getUrl) {
   const url = getUrl.replace('details', 'metadata');
+  let count = 0;
 
   axios.get(url)
       .then((response) => {
         if (response.data.files && response.data.files.length != 0) {
-          response.data.files.forEach((file) => {
-            renderImages(file, url);
-          });
+          count = response.data.files.filter((file)=> {
+            if (file.format === 'PNG' || file.format === 'JPEG' || file.format.includes('Thumb') ) {
+              return file;
+            }
+          }).length;
+          renderImages(response.data.files, url, count);
           responseText.innerHTML = imageCount ? `${imageCount} image(s) fetched successfully from ${fetchedFrom.innerHTML}.` : 'No images found in the link provided...';
         } else {
           responseText.innerHTML = 'No images found in the link provided...';
@@ -161,6 +163,7 @@ function showImages(getUrl) {
       })
       .catch((error) => {
         responseText.innerHTML = 'Uh-oh! Something\'s not right with the link provided!';
+        console.log(error);
       })
       .finally(() => {
         bootstrap.Modal.getInstance(welcomeModal).hide();
@@ -171,17 +174,22 @@ welcomeModal.addEventListener('hidden.bs.modal', (event) => {
   new bootstrap.Offcanvas(sidebar).show();
 });
 
-map.addEventListener('click', (event) => {
-  sidebar.classList.remove('show');
+restoreWelcomeModal.addEventListener('click', (event) => {
+  bootstrap.Modal.getInstance(welcomeModal).show();
+  input.value='';
 });
 
 mapToggle.addEventListener('click', (event) => {
   new bootstrap.Offcanvas(sidebar).show();
 });
 
+tileMap.addEventListener('click', (event) => {
+  bootstrap.Offcanvas.getInstance(sidebar).hide();
+});
+
 document.addEventListener('click', (event) => {
   if (event.target.classList.contains('place-button')) {
-    const imageURL = event.target.previousElementSibling.src;
+    const imageURL = event.target.previousElementSibling.dataset.original;
     const image = L.distortableImageOverlay(imageURL);
     map.imgGroup.addLayer(image);
   }
