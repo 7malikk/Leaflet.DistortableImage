@@ -57,11 +57,92 @@ function extractKey() {
   }
 }
 
+
+// ignore start
+
+// let startNum = 0;
+// const totalData = 100;
+// // another pagination
+// const newPaginate = (data) => {
+//   const startPage = (startNum * totalData) + 1;
+//   const endPage = (startNum + 1) * totalData;
+//   console.log(startPage, endPage);
+//   return data.slice(startPage - 1, endPage);
+// };
+
+// ignore end
+
+
+// pagination function
+const paginate = (imgs) => {
+  const imgsPerPage = 100;
+  const pages = Math.ceil(imgs.length / imgsPerPage);
+
+  const paginatedImgs = Array.from({length: pages}, (_, index) => {
+    const start = index * imgsPerPage;
+    return imgs.slice(start, start + imgsPerPage);
+  });
+  return paginatedImgs;
+};
+
+let currPage = 0;
+let imgs = [];
+const rightBtn = document.getElementById('rightBtn');
+const leftBtn = document.getElementById('leftBtn');
+
+// add and remove button when the array ends on both ends
+
+// next btn
+rightBtn.addEventListener('click', () => {
+  const imgs = paginate(files.filter(file => file.format === 'PNG' || file.format === 'JPEG'));
+  if (currPage < imgs.length -1) {
+    currPage = currPage + 1;
+  } else {
+    currPage = 0;
+  }
+  // console.log(currPage + 1);
+  // const len = newPaginate(files.filter(file => file.format === 'PNG' || file.format === 'JPEG')).length;
+  // console.log(len);
+  // if (len !== 0) {
+  //   startNum++;
+  // }
+  imageContainer.textContent = '';
+  renderImages(files, mainUrl, actCount);
+});
+
+// previous btn
+leftBtn.addEventListener('click', () => {
+  const imgs = paginate(files.filter(file => file.format === 'PNG' || file.format === 'JPEG'));
+  if (currPage) {
+    currPage = currPage - 1;
+  } else {
+    currPage = imgs.length - 1;
+  }
+  // console.log(currPage - 1);
+  // if (startNum < 0) {
+  //   startNum = 0;
+  // } else {
+  //   startNum--;
+  // }
+  imageContainer.textContent = '';
+  renderImages(files, mainUrl, actCount);
+});
+
+const range = document.getElementById('range');
+
+
+let files;
+let mainUrl;
+let actCount;
+
 let imageCount = 0;
 let fetchedFrom;
 function renderImages(files, url, count) {
   const thumbs = files.filter(file => file.source === 'derivative');
   const images = files.filter(file => file.format === 'PNG' || file.format === 'JPEG');
+
+  // <---------------- here is the issue, i want to get the last number and the first number instead of hardcoded 1-100-------->
+  range.innerHTML = `1-100 of ${images.length}`;
 
   if (count < 100) {
     images.forEach((file) => {
@@ -85,20 +166,26 @@ function renderImages(files, url, count) {
       imageCount++;
     });
   } else if (thumbs.length === images.length) {
-    thumbs.forEach((file) => {
+    // when the images gotten is above 100 it needs to be paginated and also displayed in thumbnail format
+    imageCount = images.length;
+    // paginate function is called here
+    imgs = paginate(thumbs);
+    imgs[currPage].forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(65, 65);
       const placeButton = document.createElement('a');
-      fetchedFrom = document.createElement('p');
+      const fileName = document.createElement('p');
       const fetchedFromUrl = document.createElement('a');
+
+      fetchedFrom = document.createElement('p');
       fetchedFromUrl.setAttribute('href', input.value);
       fetchedFromUrl.setAttribute('target', '_blank');
       fetchedFromUrl.innerHTML = 'this Internet Archive Collection';
       fetchedFrom.appendChild(fetchedFromUrl);
-      const fileName = document.createElement('p');
       fileName.innerHTML = file.name;
       fileName.classList.add('m-0');
       fileName.style.fontSize = '12px';
+
 
       placeButton.classList.add('btn', 'btn-sm', 'btn-outline-secondary', 'place-button', 'mt-1');
       placeButton.innerHTML = 'Place';
@@ -106,11 +193,12 @@ function renderImages(files, url, count) {
 
       image.setAttribute('data-original', `${url.replace('metadata', 'download')}/${file.original}`);
       image.src = `${url.replace('metadata', 'download')}/${file.name}`;
+
       imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
       imageRow.append(image, placeButton, fileName);
+
       imageContainer.appendChild(imageRow);
       imageContainer.setAttribute('class', 'row');
-      imageCount++;
     });
   } else {
     images.forEach((file) => {
@@ -154,7 +242,10 @@ function showImages(getUrl) {
               return file;
             }
           }).length;
-          renderImages(response.data.files, url, count);
+          files = response.data.files;
+          mainUrl = url;
+          actCount = count;
+          renderImages(files, mainUrl, actCount);
           responseText.innerHTML = imageCount ? `${imageCount} image(s) fetched successfully from ${fetchedFrom.innerHTML}.` : 'No images found in the link provided...';
         } else {
           responseText.innerHTML = 'No images found in the link provided...';
