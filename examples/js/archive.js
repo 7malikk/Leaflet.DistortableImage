@@ -8,6 +8,11 @@ const input = document.getElementById('input');
 const responseText = document.getElementById('response');
 const imageContainer = document.getElementById('imgContainer');
 const mapToggle = document.getElementById('mapToggle');
+let files;
+let mainUrl;
+let actCount;
+let imageCount = 0;
+let fetchedFrom;
 
 const setupMap = () => {
   map = L.map('map').setView([51.505, -0.09], 13);
@@ -58,20 +63,75 @@ function extractKey() {
 }
 
 
-// ignore start
+// <---------------------------------------------function to get proper pagination range start ------------------------------------------>
+const getTotalImageCount = () => {
+  return files.filter(file => file.format === 'PNG' || file.format === 'JPEG').length;
+};
 
-// let startNum = 0;
-// const totalData = 100;
-// // another pagination
-// const newPaginate = (data) => {
-//   const startPage = (startNum * totalData) + 1;
-//   const endPage = (startNum + 1) * totalData;
-//   console.log(startPage, endPage);
-//   return data.slice(startPage - 1, endPage);
-// };
+const getPaginations = () => {
+  const cntPerPage = 100; // assumes we want 100images per page
+  const arrPagination = [];
+  let initPage;
+  let endPage;
+  let pageCount;
 
-// ignore end
+  // total number of images returned from fetch operation
+  const totalImgCnt = getTotalImageCount();
 
+  // SCENARIO 1********************paginates only page 1
+  if (totalImgCnt < cntPerPage) { // imageCount = 99 and below
+    initPage = 1;
+    endPage = totalImgCnt;
+    arrPagination[0] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+  } else {
+    const diff = totalImgCnt % cntPerPage;
+    endPage = cntPerPage;
+    let counter = 1;
+
+    // SCENARIO 2****************paginates >= 1page(s) but all pages have exactly 100images each 
+    if (diff === 0) {
+      pageCount = totalImgCnt / cntPerPage;
+      const i = pageCount;
+      while (pageCount >= 1) {
+        endPage = cntPerPage * counter;
+        initPage = (endPage - cntPerPage) + 1;
+        arrPagination[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+
+        --pageCount;
+        ++counter;
+      };
+    } else {
+      // SCENARIO 3****************paginates > 1page but the last page has < 100images
+      if (diff >= 1) {
+      //  const lastPageImgCnt = diff; // this is number of images that should be on the last page of the sidebar
+      //   let residualImageCnt = totalImgCnt;
+
+        // "pageCount" should contain value TRUNCATED (not approximated) to integer i.e. 320/100 = 3 (not 3.20);
+        // Approximated value will not work;
+        pageCount = totalImgCnt / cntPerPage;
+        let endPage = cntPerPage;
+        const i = pageCount;
+
+        while (pageCount >= 1) { // :3 :2
+          endPage = cntPerPage * counter;
+          initPage = (endPage - cntPerPage) + 1;
+          // residualImageCnt -= cntPerPage;
+          arrPagination[i-pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+          --pageCount;
+          ++counter;
+        };
+        --counter;
+        endPage = (cntPerPage * counter) + diff;
+        initPage = (endPage - diff) + 1;
+         arrPagination[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+      };
+    };
+  };
+
+  return arrPagination;
+};
+
+// <---------------------------------------------function to get proper pagination range end ------------------------------------------>
 
 // pagination function
 const paginate = (imgs) => {
@@ -90,7 +150,6 @@ let imgs = [];
 const rightBtn = document.getElementById('rightBtn');
 const leftBtn = document.getElementById('leftBtn');
 
-// add and remove button when the array ends on both ends
 
 // next btn
 rightBtn.addEventListener('click', () => {
@@ -100,12 +159,7 @@ rightBtn.addEventListener('click', () => {
   } else {
     currPage = 0;
   }
-  // console.log(currPage + 1);
-  // const len = newPaginate(files.filter(file => file.format === 'PNG' || file.format === 'JPEG')).length;
-  // console.log(len);
-  // if (len !== 0) {
-  //   startNum++;
-  // }
+
   imageContainer.textContent = '';
   renderImages(files, mainUrl, actCount);
 });
@@ -118,12 +172,7 @@ leftBtn.addEventListener('click', () => {
   } else {
     currPage = imgs.length - 1;
   }
-  // console.log(currPage - 1);
-  // if (startNum < 0) {
-  //   startNum = 0;
-  // } else {
-  //   startNum--;
-  // }
+
   imageContainer.textContent = '';
   renderImages(files, mainUrl, actCount);
 });
@@ -131,20 +180,15 @@ leftBtn.addEventListener('click', () => {
 const range = document.getElementById('range');
 
 
-let files;
-let mainUrl;
-let actCount;
-
-let imageCount = 0;
-let fetchedFrom;
 function renderImages(files, url, count) {
   const thumbs = files.filter(file => file.source === 'derivative');
   const images = files.filter(file => file.format === 'PNG' || file.format === 'JPEG');
 
-  // <---------------- here is the issue, i want to get the last number and the first number instead of hardcoded 1-100-------->
-  range.innerHTML = `1-100 of ${images.length}`;
+
+  range.innerHTML = getPaginations()[currPage];
 
   if (count < 100) {
+    getTotalImageCount();
     images.forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(150, 150);
@@ -168,6 +212,7 @@ function renderImages(files, url, count) {
   } else if (thumbs.length === images.length) {
     // when the images gotten is above 100 it needs to be paginated and also displayed in thumbnail format
     imageCount = images.length;
+    getTotalImageCount();
     // paginate function is called here
     imgs = paginate(thumbs);
     imgs[currPage].forEach((file) => {
@@ -201,6 +246,7 @@ function renderImages(files, url, count) {
       imageContainer.setAttribute('class', 'row');
     });
   } else {
+    getTotalImageCount();
     images.forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(65, 65);
