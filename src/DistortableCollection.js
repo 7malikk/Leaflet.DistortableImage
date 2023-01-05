@@ -229,7 +229,7 @@ L.DistortableCollection = L.FeatureGroup.extend({
 
     json.images = json.images.reverse();
     json.avg_cm_per_pixel = this._getAvgCmPerPixel(json.images);
-
+    console.log(json.images);
     return json;
   },
 });

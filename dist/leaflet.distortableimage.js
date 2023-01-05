@@ -440,6 +440,7 @@ L.DistortableCollection = L.FeatureGroup.extend({
     }, this);
     json.images = json.images.reverse();
     json.avg_cm_per_pixel = this._getAvgCmPerPixel(json.images);
+    console.log(json.images);
     return json;
   }
 });
@@ -7269,7 +7270,7 @@ module.exports.formatError = function (err) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	!function() {
-/******/ 		__webpack_require__.h = function() { return "e74ca99591694a12fb9d"; }
+/******/ 		__webpack_require__.h = function() { return "a2841e30087666f608dd"; }
 /******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
