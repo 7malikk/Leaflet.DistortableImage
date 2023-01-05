@@ -64,13 +64,15 @@ function extractKey() {
 
 
 // <---------------------------------------------function to get proper pagination range start ------------------------------------------>
+// getTotalImageCount() - gets the amount of images in the fetched data
 const getTotalImageCount = () => {
   return files.filter(file => file.format === 'PNG' || file.format === 'JPEG').length;
 };
 
-const getPaginations = () => {
-  const cntPerPage = 100; // assumes we want 100images per page
-  const arrPagination = [];
+
+const getRange = () => {
+  const cntPerPage = 100; // amount of images per page
+  const pageRange = [];
   let initPage;
   let endPage;
   let pageCount;
@@ -78,57 +80,51 @@ const getPaginations = () => {
   // total number of images returned from fetch operation
   const totalImgCnt = getTotalImageCount();
 
-  // SCENARIO 1********************paginates only page 1
-  if (totalImgCnt < cntPerPage) { // imageCount = 99 and below
+  // when images are 99 or less
+  if (totalImgCnt < cntPerPage) {
     initPage = 1;
     endPage = totalImgCnt;
-    arrPagination[0] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+    pageRange[0] = `${initPage} - ${endPage} of ${totalImgCnt}`;
   } else {
     const diff = totalImgCnt % cntPerPage;
     endPage = cntPerPage;
     let counter = 1;
 
-    // SCENARIO 2****************paginates >= 1page(s) but all pages have exactly 100images each 
+    // when images paginate into exactly 100 per page
     if (diff === 0) {
       pageCount = totalImgCnt / cntPerPage;
       const i = pageCount;
       while (pageCount >= 1) {
         endPage = cntPerPage * counter;
         initPage = (endPage - cntPerPage) + 1;
-        arrPagination[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+        pageRange[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
 
         --pageCount;
         ++counter;
       };
     } else {
-      // SCENARIO 3****************paginates > 1page but the last page has < 100images
+      // when the last page has less than 100 images
       if (diff >= 1) {
-      //  const lastPageImgCnt = diff; // this is number of images that should be on the last page of the sidebar
-      //   let residualImageCnt = totalImgCnt;
-
-        // "pageCount" should contain value TRUNCATED (not approximated) to integer i.e. 320/100 = 3 (not 3.20);
-        // Approximated value will not work;
-        pageCount = totalImgCnt / cntPerPage;
+        pageCount = Math.trunc(totalImgCnt / cntPerPage);
         let endPage = cntPerPage;
         const i = pageCount;
 
-        while (pageCount >= 1) { // :3 :2
+        while (pageCount >= 1) {
           endPage = cntPerPage * counter;
           initPage = (endPage - cntPerPage) + 1;
-          // residualImageCnt -= cntPerPage;
-          arrPagination[i-pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+          pageRange[i-pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
           --pageCount;
           ++counter;
         };
         --counter;
         endPage = (cntPerPage * counter) + diff;
         initPage = (endPage - diff) + 1;
-         arrPagination[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
+        pageRange[i - pageCount] = `${initPage} - ${endPage} of ${totalImgCnt}`;
       };
     };
   };
 
-  return arrPagination;
+  return pageRange;
 };
 
 // <---------------------------------------------function to get proper pagination range end ------------------------------------------>
@@ -177,6 +173,7 @@ leftBtn.addEventListener('click', () => {
   renderImages(files, mainUrl, actCount);
 });
 
+// range
 const range = document.getElementById('range');
 
 
@@ -184,10 +181,11 @@ function renderImages(files, url, count) {
   const thumbs = files.filter(file => file.source === 'derivative');
   const images = files.filter(file => file.format === 'PNG' || file.format === 'JPEG');
 
-
-  range.innerHTML = getPaginations()[currPage];
+  // edit range innerHtml
+  range.innerHTML = getRange()[currPage];
 
   if (count < 100) {
+    // <---------------------------------- get total amount of images
     getTotalImageCount();
     images.forEach((file) => {
       const imageRow = document.createElement('div');
@@ -212,6 +210,7 @@ function renderImages(files, url, count) {
   } else if (thumbs.length === images.length) {
     // when the images gotten is above 100 it needs to be paginated and also displayed in thumbnail format
     imageCount = images.length;
+    // <---------------------------------- get total amount of images
     getTotalImageCount();
     // paginate function is called here
     imgs = paginate(thumbs);
@@ -246,7 +245,7 @@ function renderImages(files, url, count) {
       imageContainer.setAttribute('class', 'row');
     });
   } else {
-    getTotalImageCount();
+    // <---------------------------------- get total amount of images
     images.forEach((file) => {
       const imageRow = document.createElement('div');
       const image = new Image(65, 65);
