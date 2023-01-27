@@ -34,7 +34,6 @@ L.DistortableCollection = L.FeatureGroup.extend({
 
   onRemove() {
     if (this.editing) { this.editing.disable(); }
-
     this.off('layeradd', this._addEvents, this);
     this.off('layerremove', this._removeEvents, this);
   },
@@ -200,12 +199,25 @@ L.DistortableCollection = L.FeatureGroup.extend({
     return reduce / imgs.length;
   },
 
-  generateExportJson() {
+  isJsonDetected(currentURL) {
+    if (currentURL.includes('?json=')) {
+      startIndex = currentURL.lastIndexOf('.');
+      fileExtension = currentURL.slice(startIndex + 1);
+
+      if (fileExtension === 'json') {
+        console.log('JSON found in map shareable link');
+        return true;
+      }
+    }
+    return false;
+  },
+
+  generateExportJson(allImages = false) {
     const json = {};
     json.images = [];
 
     this.eachLayer(function(layer) {
-      if (this.isCollected(layer)) {
+      if (allImages || this.isCollected(layer)) {
         const sections = layer._image.src.split('/');
         const filename = sections[sections.length-1];
         const zc = layer.getCorners();
@@ -229,7 +241,6 @@ L.DistortableCollection = L.FeatureGroup.extend({
 
     json.images = json.images.reverse();
     json.avg_cm_per_pixel = this._getAvgCmPerPixel(json.images);
-
     return json;
   },
 });

@@ -53,7 +53,6 @@ function extractKey() {
   else if (input.value.includes('http://')) {
     getUrl = input.value.replace('http:', 'https:');
     input.value = getUrl;
-    console.log('input', input.value);
     showImages(getUrl);
   }
   else
@@ -62,7 +61,6 @@ function extractKey() {
     showImages(getUrl);
   }
 }
-
 
 const renderImages = (fullResImages, url) => {
   fullResImages.forEach((file) => {
@@ -120,6 +118,11 @@ const renderThumbnails = (thumbnails = [], url, fullResImgs) => {
     image.src = `${url.replace('metadata', 'download')}/${file.name}`;
     imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
     imageRow.append(image, placeButton, fileName);
+    // store the full-resolution image URL in a "data-original" attribute
+    image.setAttribute('data-original', `${url.replace('metadata', 'download')}/${thumbnails ? file.original : file.name}`);
+    image.src = `${url.replace('metadata', 'download')}/${file.name}`;
+    imageRow.classList.add('col-4', 'd-flex', 'flex-column', 'p-2', 'align-items-center');
+    imageRow.append(image, placeButton, fileName);
     imageContainer.appendChild(imageRow);
     imageContainer.setAttribute('class', 'row');
   });
@@ -167,10 +170,37 @@ tileMap.addEventListener('click', (event) => {
   bootstrap.Offcanvas.getInstance(sidebar).hide();
 });
 
+function getImageName(imageURL) {
+  const startIndex = imageURL.lastIndexOf('/') + 1;
+  const endIndex = imageURL.lastIndexOf('.');
+  const imageName = imageURL.substring(startIndex, endIndex);
+
+  return imageName;
+}
+
 document.addEventListener('click', (event) => {
   if (event.target.classList.contains('place-button')) {
-    const imageURL = event.target.previousElementSibling.dataset.original;
-    const image = L.distortableImageOverlay(imageURL);
+    const imageURL = event.target.previousElementSibling.src;
+    const imageTooltipText = getImageName(imageURL);
+
+    const image = L.distortableImageOverlay(
+        imageURL,
+        {tooltipText: imageTooltipText}
+    );
     map.imgGroup.addLayer(image);
   }
 });
+
+// download JSON
+saveMap.addEventListener('click', () => {
+  const jsonImages = map.imgGroup.generateExportJson(true).images;
+    // a check to prevent download of empty file
+    if (jsonImages.length) {
+      const encodedFile = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonImages));
+      const a = document.createElement('a');
+      a.href = 'data:' + encodedFile;
+      const fileName = prompt('Use this file to recover your map’s saved state. Enter filename:');
+      a.download = fileName ? fileName + '.json' : 'MapknitterLite.json';
+      a.click();
+    }
+})

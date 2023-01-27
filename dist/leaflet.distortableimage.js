@@ -405,11 +405,25 @@ L.DistortableCollection = L.FeatureGroup.extend({
     }, 0);
     return reduce / imgs.length;
   },
+  isJsonDetected: function isJsonDetected(currentURL) {
+    if (currentURL.includes('?json=')) {
+      startIndex = currentURL.lastIndexOf('.');
+      fileExtension = currentURL.slice(startIndex + 1);
+
+      if (fileExtension === 'json') {
+        console.log('JSON found in map shareable link');
+        return true;
+      }
+    }
+
+    return false;
+  },
   generateExportJson: function generateExportJson() {
+    var allImages = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var json = {};
     json.images = [];
     this.eachLayer(function (layer) {
-      if (this.isCollected(layer)) {
+      if (allImages || this.isCollected(layer)) {
         var sections = layer._image.src.split('/');
 
         var filename = sections[sections.length - 1];
@@ -464,7 +478,9 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
     edgeMinWidth: 50,
     editable: true,
     mode: 'distort',
-    selected: false
+    selected: false,
+    interactive: true,
+    tooltipText: ''
   },
   initialize: function initialize(url, options) {
     L.setOptions(this, options);
@@ -474,6 +490,8 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
     this._selected = this.options.selected;
     this._url = url;
     this.rotation = {};
+    this.interactive = this.options.interactive;
+    this.tooltipText = this.options.tooltipText;
   },
   onAdd: function onAdd(map) {
     var _this = this;
@@ -555,6 +573,8 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
     }
 
     this.fire('add');
+    L.DomEvent.on(this.getElement(), 'mousemove', this.activateTooltip, this);
+    L.DomEvent.on(this.getElement(), 'mouseout', this.closeTooltip, this);
   },
   onRemove: function onRemove(map) {
     L.DomEvent.off(this.getElement(), 'click', this.select, this);
@@ -571,6 +591,8 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
 
     this.fire('remove');
     L.ImageOverlay.prototype.onRemove.call(this, map);
+    L.DomEvent.on(this.getElement(), 'mouseout', this.closeTooltip, this);
+    L.DomEvent.off(this.getElement(), 'mousemove', this.deactivateTooltip, this);
   },
   _initImageDimensions: function _initImageDimensions() {
     var map = this._map;
@@ -697,6 +719,19 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
 
       return exceedsTop || exceedsBottom;
     }
+  },
+  activateTooltip: function activateTooltip() {
+    if (!this._selected) {
+      this.bindTooltip(this.tooltipText, {
+        direction: 'top'
+      }).openTooltip();
+    }
+  },
+  closeToolTip: function closeToolTip() {
+    this.closeTooltip();
+  },
+  deactivateTooltip: function deactivateTooltip() {
+    this.unbindTooltip();
   },
   setCorners: function setCorners(latlngObj) {
     var map = this._map;
@@ -7265,7 +7300,7 @@ module.exports.formatError = function (err) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	!function() {
-/******/ 		__webpack_require__.h = function() { return "fc72e53c646fd9eda2f8"; }
+/******/ 		__webpack_require__.h = function() { return "ed2f7612875ad4d0b5d6"; }
 /******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
