@@ -130,6 +130,7 @@ const renderThumbnails = (thumbnails = [], url, fullResImgs) => {
 
 function showImages(getUrl) {
   const url = getUrl.replace('details', 'metadata');
+  let count = 0;
 
   axios.get(url)
       .then((response) => {
@@ -147,6 +148,7 @@ function showImages(getUrl) {
       .catch((error) => {
         console.log(error);
         responseText.innerHTML = 'Uh-oh! Something\'s not right with the link provided!';
+        console.log(error);
       })
       .finally(() => {
         bootstrap.Modal.getInstance(welcomeModal).hide();
@@ -180,7 +182,7 @@ function getImageName(imageURL) {
 
 document.addEventListener('click', (event) => {
   if (event.target.classList.contains('place-button')) {
-    const imageURL = event.target.previousElementSibling.src;
+    const imageURL = event.target.previousElementSibling.dataset.original;
     const imageTooltipText = getImageName(imageURL);
 
     const image = L.distortableImageOverlay(
