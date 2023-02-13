@@ -413,7 +413,7 @@ L.DistortableCollection = L.FeatureGroup.extend({
     }, 0);
     return reduce / imgs.length;
   },
-  // Connects to JSON file and fetches JSON data therein from remote source
+  // connects to JSON file and fetches JSON data therein from remote source
   fetchRemoteJson: function fetchRemoteJson(url) {
     return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
       var index, imgCollectionProps, response;
@@ -430,12 +430,12 @@ L.DistortableCollection = L.FeatureGroup.extend({
             case 5:
               response = _context.sent;
 
-              if (!(response.data.images.length > 1)) {
+              if (!(response.data.collection.length > 1)) {
                 _context.next = 9;
                 break;
               }
 
-              response.data.images.forEach(function (data) {
+              response.data.collection.forEach(function (data) {
                 imgCollectionProps[index] = data;
                 index++;
               });
@@ -445,7 +445,7 @@ L.DistortableCollection = L.FeatureGroup.extend({
               });
 
             case 9:
-              imgCollectionProps[index] = response.data.images;
+              imgCollectionProps[index] = response.data.collection;
               return _context.abrupt("return", {
                 avg_cm_per_pixel: response.data.avg_cm_per_pixel,
                 imgCollectionProps: imgCollectionProps
@@ -464,7 +464,7 @@ L.DistortableCollection = L.FeatureGroup.extend({
       }, _callee, null, [[2, 13]]);
     }))();
   },
-  // expects url in this format: https://archive.org/download/segeotest/segeotest.json
+  // expects url in this format: https://archive.org/download/mkl-1/mkl-1.json
   recreateImagesFromJsonUrl: function recreateImagesFromJsonUrl(url) {
     var _this5 = this;
 
@@ -517,17 +517,18 @@ L.DistortableCollection = L.FeatureGroup.extend({
           lat: zc[1].lat,
           lon: zc[1].lng
         }, {
-          lat: zc[3].lat,
-          lon: zc[3].lng
-        }, {
           lat: zc[2].lat,
           lon: zc[2].lng
+        }, {
+          lat: zc[3].lat,
+          lon: zc[3].lng
         }];
         json.images.push({
           id: layer._leaflet_id,
           src: layer._image.src,
           width: layer._image.width,
           height: layer._image.height,
+          tooltipText: layer.getTooltipText(),
           image_file_name: filename,
           nodes: corners,
           cm_per_pixel: L.ImageUtil.getCmPerPixel(layer)
@@ -814,6 +815,9 @@ L.DistortableImageOverlay = L.ImageOverlay.extend({
   },
   deactivateTooltip: function deactivateTooltip() {
     this.unbindTooltip();
+  },
+  getTooltipText: function getTooltipText() {
+    return this.tooltipText;
   },
   setCorners: function setCorners(latlngObj) {
     var map = this._map;
@@ -7518,7 +7522,7 @@ module.exports.formatError = function (err) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	!function() {
-/******/ 		__webpack_require__.h = function() { return "03ed5b5e41a281b5fcb5"; }
+/******/ 		__webpack_require__.h = function() { return "09397fd1a086dc3bf935"; }
 /******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
